@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:shape="rectangle">
+  <stroke
+    android:width="1dp"
+    android:color="#FF000000" />
+
+	<solid 
+	    android:color="#FF000000"/>
+</shape> 
+<!-- From: file:/D:/Users/LAI/Documents/Innovative_Comp_2015/Piano/pianoView/src/main/res/drawable-mdpi/key_black_depressed.xml --><!-- From: file:/D:/Users/LAI/Documents/Innovative_Comp_2015/Piano/pianoView/build/intermediates/bundles/debug/res/drawable-mdpi-v4/key_black_depressed.xml -->
