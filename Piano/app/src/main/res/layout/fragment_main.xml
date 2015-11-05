@@ -11,6 +11,12 @@
     tools:showIn="@layout/activity_main"
     tools:context=".MainActivityFragment">
 
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18dp"
+        android:id="@+id/midiKey" />
+
     <com.twobard.pianoview.Piano
         android:id="@+id/piano_keyboard"
         android:layout_width="fill_parent"
@@ -18,6 +24,8 @@
         piano:keyCount="12"
         piano:blackKeyDrawable="@drawable/key_black_custom"
         piano:whiteKeyDrawable="@drawable/key_white_custom"
-        />
+        android:layout_below="@+id/midiKey"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentStart="false" />
 
 </RelativeLayout>
