@@ -99,7 +99,8 @@ public class Piano extends View {
         return key;
     }
 
-    public void draw(Canvas canvas) {
+    @Override
+    public void onDraw(Canvas canvas) {
         int KEY_WIDTH = this.getWidth()/this.keymap_white.size();
         int KEY_HEIGHT = this.getHeight();
         int counter = 0;
@@ -141,6 +142,28 @@ public class Piano extends View {
     };
 
 
+    public void pushKeyDownManually(int keyID){
+        Key key = null;
+        if(keymap_white.containsKey(keyID))
+            key=keymap_white.get(keyID);
+        else if(keymap_black.containsKey(keyID))
+            key = keymap_black.get(keyID);
+
+        if(key!=null){
+            if (!fingers.containsKey(keyID)) {
+                Finger finger = new Finger();
+                finger.press(key);
+                fingers.put(keyID, finger);
+            }
+        }
+    }
+
+    public void pushKeyUoManually(int keyID) {
+        if(fingers.containsKey(keyID)){
+            fingers.get(keyID).lift();
+            fingers.remove(keyID);
+        }
+    }
 
     private class KeyPressListener implements OnTouchListener{
         private TreeMap<Integer, Finger> fingers;
@@ -188,7 +211,6 @@ public class Piano extends View {
                     >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
 
             Key key = isPressingKey(event.getX(pointer_index), event.getY(pointer_index));
-
             if(!fingers.containsKey(pointer_index)){
                 Finger finger = new Finger();
                 finger.press(key);
