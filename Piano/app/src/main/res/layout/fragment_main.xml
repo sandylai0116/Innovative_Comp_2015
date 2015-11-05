@@ -11,7 +11,7 @@
     android:orientation="vertical"
     tools:showIn="@layout/activity_main"
     tools:context=".MainActivityFragment"
-    android:weightSum="2"
+    android:weightSum="4"
     >
 
     <TextView
@@ -19,23 +19,32 @@
         android:layout_height="wrap_content"
         android:textSize="18dp"
         android:id="@+id/midiKey"
+        android:text=""
         android:minLines="1" />
 
-    <com.project.piano.PianoSheet
-        android:id="@+id/drawingView1"
-        android:layout_width="wrap_content"
+    <HorizontalScrollView
+        android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true" />
+        >
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/music_sheet_layout"
+            >
+            <com.project.piano.PianoSheet
+                android:id="@+id/drawingView1"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+         />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <com.twobard.pianoview.Piano
         android:id="@+id/piano_keyboard"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="3"
         piano:keyCount="12"
         piano:blackKeyDrawable="@drawable/key_black_custom"
         piano:whiteKeyDrawable="@drawable/key_white_custom"
@@ -46,10 +55,12 @@
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textSize="18dp"
+        android:textSize="25dp"
         android:id="@+id/control"
         android:minLines="1"
         android:text="Control Key area example:reset button"
         />
+
+
 
 </LinearLayout>

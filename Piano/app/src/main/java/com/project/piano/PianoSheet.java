@@ -14,7 +14,7 @@ public class PianoSheet extends View {
     // setup initial color
     private final int paintColor = Color.BLACK;
     // defines paint and canvas
-    private Paint drawPaint;
+    private Paint paint;
 
     public PianoSheet(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -25,21 +25,31 @@ public class PianoSheet extends View {
 
     // Setup paint with color and stroke styles
     private void setupPaint() {
-        drawPaint = new Paint();
-        drawPaint.setColor(paintColor);
-        drawPaint.setAntiAlias(true);
-        drawPaint.setStrokeWidth(5);
-        drawPaint.setStyle(Paint.Style.STROKE);
-        drawPaint.setStrokeJoin(Paint.Join.ROUND);
-        drawPaint.setStrokeCap(Paint.Cap.ROUND);
+        paint = new Paint();
+        paint.setColor(paintColor);
+        paint.setAntiAlias(true);
+        paint.setStrokeWidth(5);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int width = 5000;
+        int height = 500;
+        setMeasuredDimension(width,height);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawCircle(50, 50, 20, drawPaint);
-        drawPaint.setColor(Color.GREEN);
-        canvas.drawCircle(50, 150, 20, drawPaint);
-        drawPaint.setColor(Color.BLUE);
-        canvas.drawCircle(50, 250, 20, drawPaint);
+
+        int y=canvas.getHeight()/4;
+
+        for (int line = 1; line <= 5; line++) {
+            canvas.drawLine(0, (float) y, 5000, (float) y, paint);
+            y += 30;
+        }
+
     }
 }
