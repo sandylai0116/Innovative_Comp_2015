@@ -10,23 +10,46 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     tools:showIn="@layout/activity_main"
-    tools:context=".MainActivityFragment">
-    
+    tools:context=".MainActivityFragment"
+    android:weightSum="2"
+    >
+
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textSize="18dp"
-        android:id="@+id/midiKey" />
+        android:id="@+id/midiKey"
+        android:minLines="1" />
+
+    <com.project.piano.PianoSheet
+        android:id="@+id/drawingView1"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
 
     <com.twobard.pianoview.Piano
         android:id="@+id/piano_keyboard"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         piano:keyCount="12"
         piano:blackKeyDrawable="@drawable/key_black_custom"
         piano:whiteKeyDrawable="@drawable/key_white_custom"
         android:layout_below="@+id/midiKey"
         android:layout_alignParentLeft="false"
         android:layout_alignParentStart="false" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18dp"
+        android:id="@+id/control"
+        android:minLines="1"
+        android:text="Control Key area example:reset button"
+        />
 
 </LinearLayout>
