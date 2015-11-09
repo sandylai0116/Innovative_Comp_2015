@@ -33,7 +33,7 @@
             android:id="@+id/music_sheet_layout"
             >
             <com.project.piano.PianoSheet
-                android:id="@+id/drawingView1"
+                android:id="@+id/music_sheet"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
          />
@@ -45,21 +45,33 @@
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
-        piano:keyCount="12"
+        piano:keyCount="13"
         piano:blackKeyDrawable="@drawable/key_black_custom"
         piano:whiteKeyDrawable="@drawable/key_white_custom"
         android:layout_below="@+id/midiKey"
         android:layout_alignParentLeft="false"
         android:layout_alignParentStart="false" />
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textSize="25dp"
-        android:id="@+id/control"
-        android:minLines="1"
-        android:text="Control Key area example:reset button"
-        />
+    <LinearLayout
+        android:orientation="horizontal" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:weightSum="2">
+        <ToggleButton
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textOn="Stop Recording"
+            android:textOff="Start Recording"
+            android:id="@+id/recording"
+            />
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Clear Notes"
+            android:id="@+id/clear_notes"
+            />
+    </LinearLayout>
 
 
 
