@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.HorizontalScrollView;
 import android.widget.ToggleButton;
 
 import com.twobard.pianoview.Piano;
@@ -23,7 +24,9 @@ import java.util.Map;
 public class MainActivityFragment extends Fragment {
     PianoSheet pianoSheet;
     Button clearNotes;
+    Button play;
     ToggleButton recording;
+    HorizontalScrollView pianoSheetLayout;
 
     public MainActivityFragment() {
     }
@@ -36,16 +39,25 @@ public class MainActivityFragment extends Fragment {
         Piano piano = (Piano) view.findViewById(R.id.piano_keyboard);
         pianoSheet = (PianoSheet) view.findViewById(R.id.music_sheet);
         clearNotes = (Button)view.findViewById(R.id.clear_notes);
+        play = (Button)view.findViewById(R.id.play);
         recording = (ToggleButton)view.findViewById(R.id.recording);
+        pianoSheetLayout = (HorizontalScrollView)view.findViewById(R.id.music_sheet_layout);
 
         //listener
         piano.setPianoKeyListener(onPianoKeyPress);
+        play.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("play button", "clicked");
+            }
+        });
         clearNotes.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
                 List<Integer> noteList = new ArrayList<>();
                 pianoSheet.setNoteList(noteList);
                 pianoSheet.invalidate();
+                pianoSheetLayout.scrollTo(0,0);
             }
         });
         recording.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -87,6 +99,7 @@ public class MainActivityFragment extends Fragment {
                             noteList.add(keyMap.get(id));
                             pianoSheet.setNoteList(noteList);
                             pianoSheet.invalidate();
+                            if(noteList.size()>6)pianoSheetLayout.scrollBy(150, 0);
                         }
                     }
                 }
