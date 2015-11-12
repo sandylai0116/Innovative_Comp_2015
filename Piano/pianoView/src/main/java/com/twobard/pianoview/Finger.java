@@ -1,6 +1,5 @@
 package com.twobard.pianoview;
 
-import android.util.Log;
 
 import java.util.ArrayList;
 

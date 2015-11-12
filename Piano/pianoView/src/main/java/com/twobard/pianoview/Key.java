@@ -20,6 +20,10 @@ public class Key {
         this.piano = piano;
     }
 
+    public Piano.PianoKeyListener getListener() {
+        return listener;
+    }
+
     public Boolean isPressed() {
         return fingers.size() > 0;
     }

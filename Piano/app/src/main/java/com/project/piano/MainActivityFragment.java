@@ -1,5 +1,6 @@
 package com.project.piano;
 
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +24,7 @@ import java.util.Map;
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment {
+    private Piano piano;
     private PianoSheet pianoSheet;
     private Button clearNotes;
     private Button playButton;
@@ -39,7 +41,7 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-        Piano piano = (Piano) view.findViewById(R.id.piano_keyboard);
+        piano = (Piano) view.findViewById(R.id.piano_keyboard);
         pianoSheet = (PianoSheet) view.findViewById(R.id.music_sheet);
         clearNotes = (Button)view.findViewById(R.id.clear_notes);
         playButton = (Button)view.findViewById(R.id.play);
@@ -58,8 +60,8 @@ public class MainActivityFragment extends Fragment {
                     String notes = "";
                     Iterator<Integer> it = pianoSheet.getNoteList().iterator();
                     while (it.hasNext()) {
-                        int musicTransform = it.next() + 1;
-                        notes += musicTransform + " ";
+                        int musicIndexTransform = it.next() + 1;
+                        notes += musicIndexTransform + " ";
                     }
                     if (!notes.equals("")) soundForPlayButton.playPiano(notes);
                 }
@@ -98,12 +100,32 @@ public class MainActivityFragment extends Fragment {
     private SoundPoolPlayer.VariableChangeListener onSoundChange=
             new SoundPoolPlayer.VariableChangeListener() {
                 @Override
-                public void onVariableChanged(boolean isPlaying, final int count){
+                public void onVariableChanged(final boolean isPlaying, final int count){
+                    final Map<Integer,Integer> keyMap = new HashMap<>();
+                    keyMap.put(0,0);
+                    keyMap.put(1,2);
+                    keyMap.put(2,4);
+                    keyMap.put(3,5);
+                    keyMap.put(4,7);
+                    keyMap.put(5, 9);
+                    keyMap.put(6, 11);
+                    keyMap.put(7, 12);
                     pianoSheet.setCurrentPosition(count - 1);
                     getActivity().runOnUiThread(new Runnable() {
                         public void run() {
                             pianoSheet.invalidate();
-                            if((count-1)%6==0 && count!=1)pianoSheetLayout.scrollBy(150*6, 0);
+                            if ((count - 1) % 6 == 0 && count != 1)
+                                pianoSheetLayout.scrollBy(150 * 6, 0);
+                            if(isPlaying) {
+                                final int keyMapValue = keyMap.get(pianoSheet.getNoteList().get(count - 1));
+                                piano.pushKeyDownManually(keyMapValue);
+                                Handler handler = new Handler();
+                                handler.postDelayed(new Runnable() {
+                                    public void run() {
+                                        piano.pushKeyUpManually(keyMapValue);
+                                    }
+                                }, 390);
+                            }
                         }
                     });
                 }

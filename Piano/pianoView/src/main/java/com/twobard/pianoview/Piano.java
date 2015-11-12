@@ -151,14 +151,17 @@ public class Piano extends View {
 
         if(key!=null){
             if (!fingers.containsKey(keyID)) {
+                PianoKeyListener temp = key.getListener();
+                key.setPianoKeyListener(null);
                 Finger finger = new Finger();
                 finger.press(key);
                 fingers.put(keyID, finger);
+                key.setPianoKeyListener(temp);
             }
         }
     }
 
-    public void pushKeyUoManually(int keyID) {
+    public void pushKeyUpManually(int keyID) {
         if(fingers.containsKey(keyID)){
             fingers.get(keyID).lift();
             fingers.remove(keyID);
