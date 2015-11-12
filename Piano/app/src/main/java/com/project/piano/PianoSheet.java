@@ -18,11 +18,10 @@ import java.util.List;
  * Created by LAI on 2015/11/6.
  */
 public class PianoSheet extends View {
-    // setup initial color
-    private final int paintColor = Color.BLACK;
     // defines paint and canvas
     private Paint paint;
     private List<Integer> noteList = new ArrayList<>();
+    private int currentPosition = -1;
 
     public List<Integer> getNoteList() {
         return noteList;
@@ -30,6 +29,10 @@ public class PianoSheet extends View {
 
     public void setNoteList(List<Integer> noteList) {
         this.noteList = noteList;
+    }
+
+    public void setCurrentPosition(int currentPosition) {
+        this.currentPosition = currentPosition;
     }
 
     public PianoSheet(Context context, AttributeSet attrs) {
@@ -42,7 +45,7 @@ public class PianoSheet extends View {
     // Setup paint with color and stroke styles
     private void setupPaint() {
         paint = new Paint();
-        paint.setColor(paintColor);
+        paint.setColor(Color.BLACK);
         paint.setAntiAlias(true);
         paint.setStrokeWidth(5);
         paint.setStyle(Paint.Style.STROKE);
@@ -60,10 +63,13 @@ public class PianoSheet extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         generateNewPianoSheet(canvas, paint);
-
         Iterator<Integer> it = noteList.iterator();
+        int i =0;
         while (it.hasNext()) {
-            drawNatural(canvas,it.next());
+            if(i==currentPosition) paint.setColor(Color.RED);
+            drawNatural(canvas, it.next());
+            paint.setColor(Color.BLACK);
+            i++;
         }
     }
 
