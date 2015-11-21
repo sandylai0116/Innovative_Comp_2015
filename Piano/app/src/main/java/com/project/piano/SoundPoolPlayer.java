@@ -4,8 +4,8 @@ package com.project.piano;
  * Created by katung on 9/11/2015.
  */
 import android.content.Context;
-import android.media.*;
-import android.util.Log;
+import android.media.AudioManager;
+import android.media.SoundPool;
 
 import java.util.HashMap;
 import java.util.Timer;
@@ -16,6 +16,7 @@ public class SoundPoolPlayer {
     private HashMap mSounds = new HashMap();
     private VariableChangeListener variableChangeListener;
 
+
     private boolean isPlaying = false;
 
     public boolean isPlaying() {
@@ -25,6 +26,7 @@ public class SoundPoolPlayer {
     public void setVariableChangeListener(VariableChangeListener variableChangeListener) {
         this.variableChangeListener = variableChangeListener;
     }
+
 
     public interface VariableChangeListener {
         public void onVariableChanged(boolean isPlaying, int count);
@@ -55,7 +57,7 @@ public class SoundPoolPlayer {
         for (int i = 0;i<note.length;i++){
             noteIDs[i] = (Integer) mSounds.get(Integer.parseInt(note[i]));
         }
-        timer.schedule(new task(this.mShortPlayer,noteIDs, timer),0,500);
+        timer.schedule(new task(this.mShortPlayer,noteIDs,timer),0,500);
     }
     private class task extends TimerTask
     {

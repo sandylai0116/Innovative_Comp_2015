@@ -5,19 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
-
-import be.tarsos.dsp.AudioDispatcher;
-import be.tarsos.dsp.AudioEvent;
-import be.tarsos.dsp.AudioProcessor;
-import be.tarsos.dsp.io.android.AudioDispatcherFactory;
-import be.tarsos.dsp.pitch.PitchDetectionHandler;
-import be.tarsos.dsp.pitch.PitchDetectionResult;
-import be.tarsos.dsp.pitch.PitchProcessor;
-import be.tarsos.dsp.util.PitchConverter;
 
 public class MainActivity extends AppCompatActivity {
 
+    Thread main;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,30 +16,30 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 0);
-
-        PitchDetectionHandler pdh = new PitchDetectionHandler() {
-            @Override
-            public void handlePitch(PitchDetectionResult result,AudioEvent e) {
-                final float pitchInHz = result.getPitch();
-                final int midi = PitchConverter.hertzToMidiKey(new Float(pitchInHz).doubleValue());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        TextView text = (TextView) findViewById(R.id.midiKey);
-                        text.setText("MIDI key: " + midi);
-                    }
-                    /* MIDI KEY TO MUSICAL NOTE
-                     * http://www.electronics.dit.ie/staff/tscarff/Music_technology/midi/midi_note_numbers_for_octaves.htm
-                     */
-                });
-            }
-        };
-        AudioProcessor p = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.MPM, 22050, 1024, pdh);
-        dispatcher.addAudioProcessor(p);
-        Thread main = new Thread(dispatcher,"Audio Dispatcher");
-        main.start();
-
+//        AudioDispatcher dispatcher =
+//                AudioDispatcherFactory.fromDefaultMicrophone(11025, 2048, 0);
+//
+//        PitchDetectionHandler pdh = new PitchDetectionHandler() {
+//            @Override
+//            public void handlePitch(PitchDetectionResult result,AudioEvent e) {
+//                final float pitchInHz = result.getPitch();
+//                final int midi = PitchConverter.hertzToMidiKey(new Float(pitchInHz).doubleValue());
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        TextView text = (TextView) findViewById(R.id.midiKey);
+//                        text.setText((String.valueOf(midi)));
+//                    }
+//                    /* MIDI KEY TO MUSICAL NOTE
+//                     * http://www.electronics.dit.ie/staff/tscarff/Music_technology/midi/midi_note_numbers_for_octaves.htm
+//                     */
+//                });
+//            }
+//        };
+//        AudioProcessor p = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.MPM, 11025, 2048, pdh);
+//        dispatcher.addAudioProcessor(p);
+//        main = new Thread(dispatcher,"Audio Dispatcher");
+//        main.start();
     }
 
     @Override
@@ -72,4 +63,13 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        getDelegate().onStop();
+//        //main.interrupt();
+//    }
+
+
 }

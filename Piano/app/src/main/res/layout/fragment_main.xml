@@ -19,7 +19,6 @@
         android:layout_height="wrap_content"
         android:textSize="18dp"
         android:id="@+id/midiKey"
-        android:text=""
         android:minLines="1" />
 
     <HorizontalScrollView
