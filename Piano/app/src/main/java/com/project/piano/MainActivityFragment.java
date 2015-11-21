@@ -1,8 +1,8 @@
 package com.project.piano;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.twobard.pianoview.Piano;
@@ -19,6 +20,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import be.tarsos.dsp.AudioDispatcher;
+import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.AudioProcessor;
+import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.pitch.PitchDetectionHandler;
+import be.tarsos.dsp.pitch.PitchDetectionResult;
+import be.tarsos.dsp.pitch.PitchProcessor;
+import be.tarsos.dsp.util.PitchConverter;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -32,9 +42,18 @@ public class MainActivityFragment extends Fragment {
     private  HorizontalScrollView pianoSheetLayout;
     private SoundPoolPlayer soundForPlayButton;
     private SoundPoolPlayer soundForKeyboard;
-
+    private List<Integer> list = new ArrayList<>();
+    private AudioDispatcher dispatcher;
+    private PitchDetectionHandler pdh;
+    private AudioProcessor p;
+    private Thread main;
+    private List<Integer> buffer = new ArrayList<>();
+    private Boolean isMonitoring = false;
+    private HashMap <Integer,Integer> midiMap = new HashMap<>();
+    private TextView text;
     public MainActivityFragment() {
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,6 +68,96 @@ public class MainActivityFragment extends Fragment {
         pianoSheetLayout = (HorizontalScrollView)view.findViewById(R.id.music_sheet_layout);
         soundForPlayButton = new SoundPoolPlayer(getActivity());
         soundForKeyboard = new SoundPoolPlayer(getActivity());
+        text = (TextView) view.findViewById(R.id.midiKey);
+
+        dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 2048, 1024);
+        pdh = new PitchDetectionHandler() {
+            @Override
+            public void handlePitch(PitchDetectionResult result,AudioEvent e) {
+                final float pitchInHz = result.getPitch();
+                final int midi = PitchConverter.hertzToMidiKey(new Float(pitchInHz).doubleValue());
+                int midiForProcess = midi;
+                List<Integer> subList;
+                if (isMonitoring) {
+                    if (midi != 0)
+                        Log.i("MIDIMIDMDI", String.valueOf(midi));
+
+
+                    //if (buffer.size() >= 4) {
+                        //subList = buffer.subList(buffer.size() - 4, buffer.size() - 1);
+                        //list.add(mostCommon(subList));
+                        //final int mostFreqMidi = mostCommon(subList);
+                        //subList.clear();
+                        //buffer.clear();
+                        //if (!list.isEmpty())
+                        //Log.i("Most", String.valueOf(mostFreqMidi));
+                        getActivity().runOnUiThread(new Runnable() {
+                            public void run() {
+                                text.setText(String.valueOf(midi));
+                            }
+                        });
+                            /*
+                            midiMap.put(0, 0);
+                            midiMap.put(1, 0);
+                            midiMap.put(2, 1);
+                            midiMap.put(3, 1);
+                            midiMap.put(4, 2);
+                            midiMap.put(5, 3);
+                            midiMap.put(6, 3);
+                            midiMap.put(7, 4);
+                            midiMap.put(8, 4);
+                            midiMap.put(9, 5);
+                            midiMap.put(10, 5);
+                            midiMap.put(11, 6);
+                            */
+                        midiMap.put(42, 0);
+                        midiMap.put(43, 0);
+
+                        midiMap.put(45, 1);
+                        midiMap.put(46, 1);
+                        midiMap.put(47, 1);
+
+                        midiMap.put(48, 2);
+
+                        midiMap.put(49, 3);
+                        midiMap.put(50, 3);
+
+                        midiMap.put(51, 3);
+
+                        midiMap.put(53, 4);
+                        midiMap.put(54, 4);
+
+                        midiMap.put(56, 5);
+                        midiMap.put(57, 5);
+
+                        midiMap.put(58, 6);
+                        midiMap.put(59, 6);
+
+                        midiMap.put(60, 7);
+                        midiMap.put(61, 7);
+                        if (midiMap.containsKey(midi)) {
+                            List<Integer> noteList = pianoSheet.getNoteList();
+                            noteList.add(midiMap.get(midi));
+                            pianoSheet.setNoteList(noteList);
+                            getActivity().runOnUiThread(new Runnable() {
+                                public void run() {
+                                    pianoSheet.invalidate();
+                                }
+                            });
+                            if ((noteList.size() - 1) % 6 == 0 && noteList.size() != 1)
+                                pianoSheetLayout.scrollBy(150 * 6, 0);
+                        }
+
+                }
+            }
+        };
+        p = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.DYNAMIC_WAVELET, 22050, 2048, pdh);
+        dispatcher.addAudioProcessor(p);
+
+        main = new Thread(dispatcher,"main");
+        //main.start();
+
+
         //listener
         piano.setPianoKeyListener(onPianoKeyPress);
         soundForPlayButton.setVariableChangeListener(onSoundChange);
@@ -64,22 +173,36 @@ public class MainActivityFragment extends Fragment {
                         notes += musicIndexTransform + " ";
                     }
                     if (!notes.equals("")) soundForPlayButton.playPiano(notes);
+                    SaveTxt savetxt = new SaveTxt();
+                    savetxt.save("abc");
                 }
             }
         });
         clearNotes.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 List<Integer> noteList = new ArrayList<>();
                 pianoSheet.setNoteList(noteList);
                 pianoSheet.invalidate();
                 pianoSheetLayout.scrollTo(0,0);
+                list.clear();
             }
         });
         recording.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
                 Log.i("recording button", "isChecked" + isChecked);
+                if (isChecked) {
+                    isMonitoring = true;
+                    //Thread main = new Thread(dispatcher,"Audio Dispatcher");
+                    if (!main.getState().equals(Thread.State.RUNNABLE)) {
+                        main.start();
+                    }
+                } else {
+                    isMonitoring = false;
+                }
             }
         });
 
@@ -93,10 +216,10 @@ public class MainActivityFragment extends Fragment {
         */
 
 
-
-
         return view;
     }
+
+
     private SoundPoolPlayer.VariableChangeListener onSoundChange=
             new SoundPoolPlayer.VariableChangeListener() {
                 @Override
@@ -156,7 +279,8 @@ public class MainActivityFragment extends Fragment {
                         musicMap.put(11, 7);
                         musicMap.put(12, 8);
                         if(keyMap.containsKey(id)) {
-                            soundForKeyboard.playPiano(String.valueOf(musicMap.get(id)));
+                            //soundForKeyboard.playPiano(String.valueOf(musicMap.get(id)));
+                            soundForKeyboard.playShortResource(musicMap.get(id));
                             List<Integer> noteList = pianoSheet.getNoteList();
                             noteList.add(keyMap.get(id));
                             pianoSheet.setNoteList(noteList);
@@ -166,4 +290,22 @@ public class MainActivityFragment extends Fragment {
                     }
                 }
             };
+
+    public static <T> T mostCommon(List<T> list) {
+        Map<T, Integer> map = new HashMap<>();
+
+        for (T t : list) {
+            Integer val = map.get(t);
+            map.put(t, val == null ? 1 : val + 1);
+        }
+
+        Map.Entry<T, Integer> max = null;
+
+        for (Map.Entry<T, Integer> e : map.entrySet()) {
+            if (max == null || e.getValue() > max.getValue())
+                max = e;
+        }
+
+        return max.getKey();
+    }
 }
