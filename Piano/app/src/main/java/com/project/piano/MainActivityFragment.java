@@ -16,6 +16,7 @@ import android.widget.ToggleButton;
 import com.twobard.pianoview.Piano;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -51,6 +52,9 @@ public class MainActivityFragment extends Fragment {
     private Boolean isMonitoring = false;
     private HashMap <Integer,Integer> midiMap = new HashMap<>();
     private TextView text;
+    //control value
+    private int noSoundCount = -1;
+    private int lastMostFreqMidi = -1;
     public MainActivityFragment() {
     }
 
@@ -69,8 +73,29 @@ public class MainActivityFragment extends Fragment {
         soundForPlayButton = new SoundPoolPlayer(getActivity());
         soundForKeyboard = new SoundPoolPlayer(getActivity());
         text = (TextView) view.findViewById(R.id.midiKey);
+        dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 512);
 
-        dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 2048, 1024);
+        // voice to midi value map
+        midiMap.put(42, 0);
+        midiMap.put(43, 0);
+        midiMap.put(44, 0);
+        midiMap.put(45, 1);
+        midiMap.put(46, 1);
+        midiMap.put(47, 1);
+        midiMap.put(48, 2);
+        midiMap.put(49, 3);
+        midiMap.put(50, 3);
+        midiMap.put(51, 3);
+        midiMap.put(53, 4);
+        midiMap.put(54, 4);
+        midiMap.put(56, 5);
+        midiMap.put(57, 5);
+        midiMap.put(58, 6);
+        midiMap.put(59, 6);
+        midiMap.put(60, 7);
+        midiMap.put(61, 7);
+
+
         pdh = new PitchDetectionHandler() {
             @Override
             public void handlePitch(PitchDetectionResult result,AudioEvent e) {
@@ -78,50 +103,50 @@ public class MainActivityFragment extends Fragment {
                 final int midi = PitchConverter.hertzToMidiKey(new Float(pitchInHz).doubleValue());
 
                 if (isMonitoring) {
+                    //Log.i("MIDI", String.valueOf(midi));
+                    //add midi to buffer
+                    if(buffer.size()<150) buffer.add(midi);
+                    else{
+                        buffer = buffer.subList(buffer.size()-75, buffer.size());
+                        buffer.add(midi);
+                    }
                     if (midi != 0) {
-                        Log.i("MIDI",String.valueOf(midi));
-                        if (buffer.size() >= 12) {
-                            //Takes latest values from buffer as sample
-                            List<Integer> subList = buffer.subList(buffer.size() - 12, buffer.size() - 1);
+                        getActivity().runOnUiThread(new Runnable() {
+                            public void run() {
+                                text.setText(String.valueOf("MIDI: "+midi));
+                            }
+                        });
+                        //Takes 5 samples from buffer
+                        //Log.i("arr", Arrays.toString(buffer.toArray())+"");
+                        if (buffer.size() >= 5) {
+                            List<Integer> subList = buffer.subList(buffer.size()-5, buffer.size());
+                            //Log.i("sub_arr", Arrays.toString(subList.toArray())+"");
+                            //find common frequency
                             final int mostFreqMidi = mostCommon(subList);
-                            subList.clear();
-                            buffer.clear();
-                            //if (!list.isEmpty())
+                            //calculate the total number of the common frequency
+                            int totalNumOfMostFreqMidi =0;
+                            for(int i=0;i<subList.size();i++){
+                                if(subList.get(i).intValue()==mostFreqMidi) totalNumOfMostFreqMidi++;
+                            }
+
+                            //require at least the number of the common frequency
+                            //Log.i("MIDI---data", String.valueOf(totalNumOfMostFreqMidi+" "+noSoundCount));
+                            if(totalNumOfMostFreqMidi<4) {
+                                //Log.i("MIDI---totalNumOfMostFreqMidi", String.valueOf(totalNumOfMostFreqMidi));
+                                noSoundCount=0;
+                                return;
+                            }
+                            //require no sound delay when repeat the same key
+                            if(noSoundCount<5 && mostFreqMidi==lastMostFreqMidi) {
+                                //Log.i("MIDI---no sound delay", String.valueOf(noSoundCount+" "+mostFreqMidi+" "+lastMostFreqMidi));
+                                noSoundCount=0;
+                                return;
+                            }
+                            noSoundCount=0;
+
                             Log.i("MIDI---COMMON", String.valueOf(mostFreqMidi));
-                            getActivity().runOnUiThread(new Runnable() {
-                                public void run() {
-                                    text.setText(String.valueOf(mostFreqMidi));
-                                }
-                            });
-
-                            // eric data
-                            midiMap.put(42, 0);
-                            midiMap.put(43, 0);
-                            midiMap.put(44, 0); //<-ming
-                            midiMap.put(45, 1);
-                            midiMap.put(46, 1);
-                            midiMap.put(47, 1);
-
-                            midiMap.put(48, 2);
-
-                            midiMap.put(49, 3);
-                            midiMap.put(50, 3);
-
-                            midiMap.put(51, 3);
-
-                            midiMap.put(53, 4);
-                            midiMap.put(54, 4);
-
-                            midiMap.put(56, 5);
-                            midiMap.put(57, 5);
-
-                            midiMap.put(58, 6);
-                            midiMap.put(59, 6);
-
-                            midiMap.put(60, 7);
-                            midiMap.put(61, 7);
-
                             if (midiMap.containsKey(mostFreqMidi)) {
+                                lastMostFreqMidi = mostFreqMidi;
                                 List<Integer> noteList = pianoSheet.getNoteList();
                                 noteList.add(midiMap.get(mostFreqMidi));
                                 pianoSheet.setNoteList(noteList);
@@ -134,6 +159,10 @@ public class MainActivityFragment extends Fragment {
                                     pianoSheetLayout.scrollBy(150 * 6, 0);
                             }
                         }
+                    }
+                    else {
+                        if (noSoundCount < 100) noSoundCount++;
+                        if (noSoundCount > 15) lastMostFreqMidi =-1;
                     }
                 }
             }
@@ -184,6 +213,8 @@ public class MainActivityFragment extends Fragment {
                 Log.i("recording button", "isChecked" + isChecked);
                 if (isChecked) {
                     isMonitoring = true;
+                    noSoundCount = -1;
+                    lastMostFreqMidi = -1;
                     //Thread main = new Thread(dispatcher,"Audio Dispatcher");
                     if (!main.getState().equals(Thread.State.RUNNABLE)) {
                         main.start();
@@ -193,15 +224,6 @@ public class MainActivityFragment extends Fragment {
                 }
             }
         });
-
-
-        //generate notes
-        /*
-            List<Integer> noteList = new ArrayList<>();
-            noteList.add(1);
-            pianoSheet.setNoteList(noteList);
-            pianoSheet.invalidate();
-        */
 
 
         return view;
