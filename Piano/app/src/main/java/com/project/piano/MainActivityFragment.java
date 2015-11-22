@@ -189,16 +189,14 @@ public class MainActivityFragment extends Fragment {
                         notes += musicIndexTransform + " ";
                     }
                     if (!notes.equals("")) soundForPlayButton.playPiano(notes);
-                    //TODO: Implement the save text
-                    //SaveTxt savetxt = new SaveTxt();
-                    //savetxt.save("abc");
                 }
             }
         });
         clearNotes.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                pianoSheet.setCurrentPosition(-1);
+                soundForPlayButton.timerCancel();
                 List<Integer> noteList = new ArrayList<>();
                 pianoSheet.setNoteList(noteList);
                 pianoSheet.invalidate();
@@ -215,12 +213,15 @@ public class MainActivityFragment extends Fragment {
                     isMonitoring = true;
                     noSoundCount = -1;
                     lastMostFreqMidi = -1;
-                    //Thread main = new Thread(dispatcher,"Audio Dispatcher");
+
                     if (!main.getState().equals(Thread.State.RUNNABLE)) {
                         main.start();
                     }
                 } else {
                     isMonitoring = false;
+                    //Save key to text file for future use
+                    SaveTxt savetxt = new SaveTxt();
+                    savetxt.save(Arrays.toString(pianoSheet.getNoteList().toArray()));
                 }
             }
         });
