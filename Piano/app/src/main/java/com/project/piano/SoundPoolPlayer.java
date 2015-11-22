@@ -50,25 +50,32 @@ public class SoundPoolPlayer {
         int iSoundId = (Integer) mSounds.get(piResource);
         this.mShortPlayer.play(iSoundId, 0.99f, 0.99f, 0, 0, 1);
     }
+    private Timer globalTimer = null;
+    public void timerCancel(){
+        if (globalTimer!=null) {
+            globalTimer.cancel();
+            globalTimer = null;
+            isPlaying = false;
+        }
+    }
     public void playPiano(String notes) {
-        Timer timer = new Timer(true);
+        globalTimer = new Timer(true);
         String[] note = notes.split(" ");
         int[] noteIDs = new int[note.length];
         for (int i = 0;i<note.length;i++){
             noteIDs[i] = (Integer) mSounds.get(Integer.parseInt(note[i]));
         }
-        timer.schedule(new task(this.mShortPlayer,noteIDs,timer),0,500);
+        globalTimer.schedule(new task(this.mShortPlayer,noteIDs),0,500);
     }
     private class task extends TimerTask
     {
         private int[] resourceID;
         private SoundPool innerPlayer = null;
         private int count = 0;
-        private Timer timer = null;
-        task(SoundPool player,int[] ID, Timer timer){
+        //private Timer timer = null;
+        task(SoundPool player,int[] ID){
             this.resourceID=ID;
             this.innerPlayer=player;
-            this.timer = timer;
         }
         public void run(){
             if (count < resourceID.length) {
@@ -77,7 +84,7 @@ public class SoundPoolPlayer {
                 isPlaying = true;
             }
             else {
-                timer.cancel();
+                timerCancel();
                 count = 0;
                 isPlaying = false;
             }

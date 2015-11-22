@@ -183,12 +183,20 @@ public class MainActivityFragment extends Fragment {
                 if(!soundForPlayButton.isPlaying()) {
                     pianoSheetLayout.scrollTo(0, 0);
                     String notes = "";
+                    String[] doremi = {"C","D","E","F","G","A","B","C'"};
+                    String writeTo = "";
                     Iterator<Integer> it = pianoSheet.getNoteList().iterator();
                     while (it.hasNext()) {
                         int musicIndexTransform = it.next() + 1;
                         notes += musicIndexTransform + " ";
+                        writeTo += doremi[musicIndexTransform - 1] + " ";
                     }
-                    if (!notes.equals("")) soundForPlayButton.playPiano(notes);
+                    if (!notes.equals("")) {
+                        soundForPlayButton.playPiano(notes);
+                        SaveTxt save = new SaveTxt();
+                        save.save(writeTo);
+                    }
+
                 }
             }
         });
