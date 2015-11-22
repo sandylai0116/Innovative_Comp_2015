@@ -1,5 +1,7 @@
 package com.project.piano;
 
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -51,6 +53,7 @@ public class MainActivityFragment extends Fragment {
     private List<Integer> buffer = new ArrayList<>();
     private Boolean isMonitoring = false;
     private HashMap <Integer,Integer> midiMap = new HashMap<>();
+    private List<Integer> flatlist = new ArrayList<>();
     private TextView text;
     //control value
     private int noSoundCount = -1;
@@ -76,32 +79,42 @@ public class MainActivityFragment extends Fragment {
         dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 512);
 
         // voice to midi value map
-        midiMap.put(42, 0);
-        midiMap.put(43, 0);
-        midiMap.put(44, 0);
-        midiMap.put(45, 1);
-        midiMap.put(46, 1);
-        midiMap.put(47, 1);
-        midiMap.put(48, 2);
-        midiMap.put(49, 3);
-        midiMap.put(50, 3);
-        midiMap.put(51, 3);
-        midiMap.put(53, 4);
-        midiMap.put(54, 4);
-        midiMap.put(56, 5);
-        midiMap.put(57, 5);
-        midiMap.put(58, 6);
-        midiMap.put(59, 6);
-        midiMap.put(60, 7);
-        midiMap.put(61, 7);
+        midiMap.put(60,0);
+        midiMap.put(62,1);
+        midiMap.put(64,2);
+        midiMap.put(65,3);
+        midiMap.put(67,4);
+        midiMap.put(69,5);
+        midiMap.put(71,6);
+        midiMap.put(72,7);
 
+        midiMap.put(74,1);
+        midiMap.put(76,2);
+        midiMap.put(77,3);
+        midiMap.put(79,4);
+        midiMap.put(81,5);
+        midiMap.put(83,6);
+        midiMap.put(84,7);
+
+
+
+/*
+        flatlist.add(61);
+        flatlist.add(63);
+        flatlist.add(68);
+        flatlist.add(70);
+        flatlist.add(73);
+        flatlist.add(75);
+        flatlist.add(78);
+        flatlist.add(80);
+        flatlist.add(82);*/
 
         pdh = new PitchDetectionHandler() {
             @Override
             public void handlePitch(PitchDetectionResult result,AudioEvent e) {
                 final float pitchInHz = result.getPitch();
-                final int midi = PitchConverter.hertzToMidiKey(new Float(pitchInHz).doubleValue());
-
+                final int midi = PitchConverter.hertzToMidiKey(new Float(pitchInHz).doubleValue()) ;
+                //int midiForProcess = midi % 12;
                 if (isMonitoring) {
                     //Log.i("MIDI", String.valueOf(midi));
                     //add midi to buffer
@@ -113,11 +126,20 @@ public class MainActivityFragment extends Fragment {
                     if (midi != 0) {
                         getActivity().runOnUiThread(new Runnable() {
                             public void run() {
-                                text.setText(String.valueOf("MIDI: "+midi));
+                                text.setTextColor(Color.BLACK);
+                                text.setTypeface(null, Typeface.NORMAL);
+
+                                if (flatlist.contains(midi)) {
+                                    text.setTextColor(Color.RED);
+                                    text.setText(String.valueOf("MIDI: " + midi));
+                                    text.setTypeface(null, Typeface.BOLD);
+                                } else {
+                                    text.setText(String.valueOf("MIDI: "+midi));
+                                }
                             }
                         });
                         //Takes 5 samples from buffer
-                        //Log.i("arr", Arrays.toString(buffer.toArray())+"");
+                        Log.i("arr", Arrays.toString(buffer.toArray())+"");
                         if (buffer.size() >= 5) {
                             List<Integer> subList = buffer.subList(buffer.size()-5, buffer.size());
                             //Log.i("sub_arr", Arrays.toString(subList.toArray())+"");
@@ -145,17 +167,33 @@ public class MainActivityFragment extends Fragment {
                             noSoundCount=0;
 
                             Log.i("MIDI---COMMON", String.valueOf(mostFreqMidi));
+                            if(pianoSheet.getNoteList().size() <= pianoSheet.getCurrentPositionForRecording()) {
+                                isMonitoring = false;
+                                getActivity().runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        recording.setChecked(false);
+                                    }}
+                                );
+                            }
                             if (midiMap.containsKey(mostFreqMidi)) {
                                 lastMostFreqMidi = mostFreqMidi;
-                                List<Integer> noteList = pianoSheet.getNoteList();
-                                noteList.add(midiMap.get(mostFreqMidi));
-                                pianoSheet.setNoteList(noteList);
+
+                                if(pianoSheet.getNoteList().get(pianoSheet.getCurrentPositionForRecording()) == midiMap.get(mostFreqMidi))
+                                    pianoSheet.setCurrentPositionForRecording(pianoSheet.getCurrentPositionForRecording()+1);
+                                else{
+                                    List<Integer> correctnessList = pianoSheet.getCorrectnessList();
+                                    correctnessList.add(pianoSheet.getCurrentPositionForRecording());
+                                    pianoSheet.setCorrectnessList(correctnessList);
+                                    pianoSheet.setCurrentPositionForRecording(pianoSheet.getCurrentPositionForRecording()+1);
+                                }
+
                                 getActivity().runOnUiThread(new Runnable() {
                                     public void run() {
                                         pianoSheet.invalidate();
                                     }
                                 });
-                                if ((noteList.size() - 1) % 6 == 0 && noteList.size() != 1)
+
+                                if ((pianoSheet.getCurrentPositionForRecording() - 1) % 6 == 0 && pianoSheet.getCurrentPositionForRecording() != 1)
                                     pianoSheetLayout.scrollBy(150 * 6, 0);
                             }
                         }
@@ -167,7 +205,7 @@ public class MainActivityFragment extends Fragment {
                 }
             }
         };
-        p = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.MPM, 22050, 2048, pdh);
+        p = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.MPM, 22050, 1024, pdh);
         dispatcher.addAudioProcessor(p);
 
         main = new Thread(dispatcher,"main");
@@ -180,7 +218,10 @@ public class MainActivityFragment extends Fragment {
         playButton.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isMonitoring = false;
+                recording.setChecked(false);
                 if(!soundForPlayButton.isPlaying()) {
+                    pianoSheet.setCurrentPositionForRecording(-1);
                     pianoSheetLayout.scrollTo(0, 0);
                     String notes = "";
                     String[] doremi = {"C","D","E","F","G","A","B","C'"};
@@ -203,6 +244,9 @@ public class MainActivityFragment extends Fragment {
         clearNotes.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
+                List<Integer> correctnessList = pianoSheet.getCorrectnessList();
+                correctnessList.clear();
+                pianoSheet.setCorrectnessList(correctnessList);
                 pianoSheet.setCurrentPosition(-1);
                 soundForPlayButton.timerCancel();
                 List<Integer> noteList = new ArrayList<>();
@@ -216,8 +260,24 @@ public class MainActivityFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
+               if(pianoSheet.getNoteList().isEmpty()) {
+                   buttonView.setChecked(false);
+                   return;
+               }
+
                 Log.i("recording button", "isChecked" + isChecked);
                 if (isChecked) {
+                    List<Integer> correctnessList = pianoSheet.getCorrectnessList();
+                    correctnessList.clear();
+                    pianoSheet.setCorrectnessList(correctnessList);
+                    pianoSheet.setCurrentPositionForRecording(0);
+                    pianoSheetLayout.scrollTo(0,0);
+                    getActivity().runOnUiThread(new Runnable() {
+                        public void run() {
+                            pianoSheet.invalidate();
+                        }
+                    });
+
                     isMonitoring = true;
                     noSoundCount = -1;
                     lastMostFreqMidi = -1;

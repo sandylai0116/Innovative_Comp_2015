@@ -23,6 +23,25 @@ public class PianoSheet extends View {
     private List<Integer> noteList = new ArrayList<>();
     private int currentPosition = -1;
 
+    private int currentPositionForRecording = -1;
+    private List<Integer> correctnessList = new ArrayList<>();
+
+    public int getCurrentPositionForRecording() {
+        return currentPositionForRecording;
+    }
+
+    public void setCurrentPositionForRecording(int currentPositionForRecording) {
+        this.currentPositionForRecording = currentPositionForRecording;
+    }
+
+    public List<Integer> getCorrectnessList() {
+        return correctnessList;
+    }
+
+    public void setCorrectnessList(List<Integer> correctnessList) {
+        this.correctnessList = correctnessList;
+    }
+
     public List<Integer> getNoteList() {
         return noteList;
     }
@@ -67,6 +86,9 @@ public class PianoSheet extends View {
         int i =0;
         while (it.hasNext()) {
             if(i==currentPosition) paint.setColor(Color.RED);
+            if(correctnessList.contains(i)) paint.setColor(Color.RED);
+            if(currentPositionForRecording == i) paint.setColor(Color.GREEN);
+
             drawNatural(canvas, it.next());
             paint.setColor(Color.BLACK);
             i++;
